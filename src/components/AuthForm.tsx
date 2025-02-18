@@ -91,17 +91,17 @@ export function AuthForm() {
   return (
     <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
       <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent animate-fade-in">
           {isSignUp ? "Create an account" : "Welcome back"}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground animate-fade-up" style={{ animationDelay: "0.1s" }}>
           {isSignUp
             ? "Enter your details to create your account"
             : "Enter your credentials to sign in"}
         </p>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 animate-fade-up" style={{ animationDelay: "0.2s" }}>
         <SocialAuthButton
           icon={
             <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -126,6 +126,7 @@ export function AuthForm() {
           provider="Google"
           onClick={() => handleSocialLogin('google')}
           disabled={isLoading}
+          className="transition-all duration-300 hover:scale-[1.02] hover:shadow-md"
         />
 
         <SocialAuthButton
@@ -140,10 +141,11 @@ export function AuthForm() {
           provider="Facebook"
           onClick={() => handleSocialLogin('facebook')}
           disabled={isLoading}
+          className="transition-all duration-300 hover:scale-[1.02] hover:shadow-md"
         />
       </div>
 
-      <div className="relative">
+      <div className="relative animate-fade-up" style={{ animationDelay: "0.3s" }}>
         <div className="absolute inset-0 flex items-center">
           <Separator className="w-full" />
         </div>
@@ -154,49 +156,57 @@ export function AuthForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid gap-4">
+      <form onSubmit={handleSubmit} className="grid gap-4 animate-fade-up" style={{ animationDelay: "0.4s" }}>
         {isSignUp && (
           <div className="grid gap-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username" className="text-sm font-medium">Username</Label>
             <Input
               id="username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               disabled={isLoading}
+              className="transition-all duration-300 hover:border-primary focus:border-primary"
             />
           </div>
         )}
         <div className="grid gap-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-sm font-medium">Email</Label>
           <Input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isLoading}
+            className="transition-all duration-300 hover:border-primary focus:border-primary"
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="text-sm font-medium">Password</Label>
           <Input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
+            className="transition-all duration-300 hover:border-primary focus:border-primary"
           />
         </div>
-        <Button type="submit" disabled={isLoading}>
+        <Button 
+          type="submit" 
+          disabled={isLoading}
+          className="bg-primary hover:bg-primary-dark text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-md"
+        >
           {isLoading ? "Loading..." : isSignUp ? "Create account" : "Sign in"}
         </Button>
       </form>
 
       <Button
         variant="link"
-        className="px-0 font-normal"
+        className="px-0 font-normal text-primary hover:text-primary-dark transition-colors animate-fade-up"
         onClick={() => setIsSignUp(!isSignUp)}
         disabled={isLoading}
+        style={{ animationDelay: "0.5s" }}
       >
         {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
       </Button>

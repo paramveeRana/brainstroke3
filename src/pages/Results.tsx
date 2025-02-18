@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import { Brain, Heart, Activity, AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/App";
 import { toast } from "sonner";
+import { calculateStrokeRisk } from "@/utils/analysis/strokeRiskAnalysis";
 
 type HealthData = {
   age: number;
@@ -23,6 +24,8 @@ const Results = () => {
   const { user } = useAuth();
   const [riskScore, setRiskScore] = useState(0);
   const [riskLevel, setRiskLevel] = useState<"Low" | "Moderate" | "High">("Low");
+  const [recommendations, setRecommendations] = useState<string[]>([]);
+  const [bmi, setBmi] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const healthData: HealthData = location.state?.healthData;
 
@@ -32,41 +35,17 @@ const Results = () => {
       return;
     }
 
-    const calculateAndStoreResults = async () => {
+    const analyzeAndStoreResults = async () => {
       try {
         setIsLoading(true);
-        // Calculate BMI
-        const bmi = healthData.weight / Math.pow(healthData.height / 100, 2);
         
-        // Calculate base risk score (0-100)
-        let score = 0;
+        // Calculate risk using the dataset
+        const analysisResult = calculateStrokeRisk(healthData);
         
-        // Age factor (higher risk with age)
-        score += Math.min(healthData.age / 1.5, 30);
-        
-        // BMI factor
-        if (bmi > 30) score += 15;
-        else if (bmi > 25) score += 10;
-        
-        // Medical conditions
-        if (healthData.hypertension) score += 20;
-        if (healthData.heart_disease) score += 20;
-        
-        // Smoking status
-        if (healthData.smoking_status === "Advanced Smoker") score += 15;
-        else if (healthData.smoking_status === "Casual Smoker") score += 10;
-        
-        // Gender factor (slightly higher risk for males)
-        if (healthData.gender === "Male") score += 5;
-        
-        // Normalize score to 0-100
-        score = Math.min(Math.max(score, 0), 100);
-        
-        const finalScore = Math.round(score);
-        const riskLevel = score < 33 ? "Low" : score < 66 ? "Moderate" : "High";
-        
-        setRiskScore(finalScore);
-        setRiskLevel(riskLevel);
+        setRiskScore(analysisResult.riskScore);
+        setRiskLevel(analysisResult.riskLevel);
+        setBmi(analysisResult.bmi);
+        setRecommendations(analysisResult.recommendations);
 
         // Store results in Supabase
         if (user?.id) {
@@ -74,19 +53,11 @@ const Results = () => {
             .from('risk_assessments')
             .insert({
               user_id: user.id,
-              risk_score: finalScore,
-              risk_level: riskLevel,
-              bmi: parseFloat(bmi.toFixed(1)),
-              recommendations: getRecommendations(),
-              health_record_data: {
-                age: healthData.age,
-                gender: healthData.gender,
-                height: healthData.height,
-                weight: healthData.weight,
-                hypertension: healthData.hypertension,
-                heart_disease: healthData.heart_disease,
-                smoking_status: healthData.smoking_status
-              }
+              risk_score: analysisResult.riskScore,
+              risk_level: analysisResult.riskLevel,
+              bmi: analysisResult.bmi,
+              recommendations: analysisResult.recommendations,
+              health_record_data: healthData
             });
 
           if (error) {
@@ -98,69 +69,41 @@ const Results = () => {
           }
         }
       } catch (error: any) {
-        console.error("Error storing risk assessment:", error);
-        toast.error("Failed to save your assessment results");
+        console.error("Error analyzing risk assessment:", error);
+        toast.error("Failed to analyze your assessment results");
       } finally {
         setIsLoading(false);
       }
     };
 
-    calculateAndStoreResults();
+    analyzeAndStoreResults();
   }, [healthData, navigate, user]);
-
-  const getRecommendations = () => {
-    const recommendations = [];
-    
-    if (healthData.smoking_status !== "Never Smoked") {
-      recommendations.push("Consider smoking cessation programs and support");
-    }
-    
-    if (healthData.hypertension) {
-      recommendations.push("Regular blood pressure monitoring and medication adherence");
-    }
-    
-    if (healthData.heart_disease) {
-      recommendations.push("Follow your cardiac care plan and maintain regular check-ups");
-    }
-    
-    const bmi = healthData.weight / Math.pow(healthData.height / 100, 2);
-    if (bmi > 25) {
-      recommendations.push("Work on weight management through diet and exercise");
-    }
-    
-    recommendations.push("Regular exercise (at least 150 minutes per week)");
-    recommendations.push("Maintain a balanced, heart-healthy diet");
-    
-    return recommendations;
-  };
 
   if (!healthData || isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto py-8 px-4">
+      <Layout>
+        <div className="container mx-auto py-8 px-4">
           <div className="flex justify-center items-center min-h-[60vh]">
             <p className="text-lg text-muted-foreground">Loading assessment results...</p>
           </div>
-        </main>
-      </div>
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto py-8 px-4">
+    <Layout>
+      <div className="container mx-auto py-8 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-3xl font-bold mb-4">Your Stroke Risk Assessment</h1>
             <p className="text-muted-foreground">
-              Based on your health data, we've analyzed your risk factors and generated personalized recommendations.
+              Based on your health data and our comprehensive dataset analysis, we've evaluated your risk factors and generated personalized recommendations.
             </p>
           </div>
 
           {/* Risk Score Card */}
-          <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+          <div className="backdrop-blur-sm bg-white/80 rounded-2xl shadow-xl border border-white/20 p-8 mb-8 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]">
             <div className="flex flex-col items-center">
               <div 
                 className={`text-5xl font-bold mb-4 ${
@@ -177,14 +120,14 @@ const Results = () => {
                 {riskLevel} Risk Level
               </div>
               <p className="text-muted-foreground text-center max-w-md">
-                This score is based on your provided health information and known risk factors for stroke.
+                This score is calculated using real healthcare data and advanced analysis of multiple risk factors.
               </p>
             </div>
           </div>
 
           {/* Risk Factors Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="backdrop-blur-sm bg-white/80 rounded-2xl shadow-xl border border-white/20 p-6 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]">
               <Heart className="w-8 h-8 text-red-500 mb-4" />
               <h3 className="font-semibold mb-2">Cardiovascular Health</h3>
               <p className="text-sm text-muted-foreground">
@@ -192,15 +135,15 @@ const Results = () => {
                 {healthData.hypertension ? "Hypertension present" : "No hypertension"}
               </p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="backdrop-blur-sm bg-white/80 rounded-2xl shadow-xl border border-white/20 p-6 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]">
               <Activity className="w-8 h-8 text-blue-500 mb-4" />
               <h3 className="font-semibold mb-2">Lifestyle Factors</h3>
               <p className="text-sm text-muted-foreground">
-                BMI: {(healthData.weight / Math.pow(healthData.height / 100, 2)).toFixed(1)} •{" "}
+                BMI: {bmi.toFixed(1)} •{" "}
                 Smoking: {healthData.smoking_status}
               </p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="backdrop-blur-sm bg-white/80 rounded-2xl shadow-xl border border-white/20 p-6 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]">
               <Brain className="w-8 h-8 text-purple-500 mb-4" />
               <h3 className="font-semibold mb-2">Demographics</h3>
               <p className="text-sm text-muted-foreground">
@@ -210,13 +153,13 @@ const Results = () => {
           </div>
 
           {/* Recommendations */}
-          <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="backdrop-blur-sm bg-white/80 rounded-2xl shadow-xl border border-white/20 p-8 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]">
             <div className="flex items-center gap-3 mb-6">
               <AlertTriangle className="w-6 h-6 text-primary" />
               <h2 className="text-xl font-semibold">Recommendations</h2>
             </div>
             <ul className="space-y-4">
-              {getRecommendations().map((recommendation, index) => (
+              {recommendations.map((recommendation, index) => (
                 <li key={index} className="flex items-start gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2" />
                   <p className="text-muted-foreground">{recommendation}</p>
@@ -242,8 +185,8 @@ const Results = () => {
             </Button>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 };
 

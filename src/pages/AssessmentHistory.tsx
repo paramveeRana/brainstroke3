@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/App";
 import { Brain, Calendar, AlertTriangle } from "lucide-react";
@@ -66,27 +66,27 @@ const AssessmentHistory = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto py-8 px-4">
+      <Layout>
+        <div className="container mx-auto py-8 px-4">
           <div className="flex justify-center items-center min-h-[60vh]">
             <p className="text-lg text-muted-foreground">Loading assessment history...</p>
           </div>
-        </main>
-      </div>
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto py-8 px-4">
+    <Layout>
+      <div className="container mx-auto py-8 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Assessment History</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+              Assessment History
+            </h1>
             <Button 
               onClick={() => navigate('/assessment')}
-              className="bg-primary hover:bg-primary-dark text-white"
+              className="bg-primary hover:bg-primary-dark text-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
             >
               Take New Assessment
             </Button>
@@ -175,8 +175,8 @@ const AssessmentHistory = () => {
             </div>
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 };
 

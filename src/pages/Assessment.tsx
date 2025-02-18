@@ -13,6 +13,7 @@ import Header from "@/components/Header";
 import { useNavigate } from "react-router-dom";
 import { Heart, User2, Ruler, Scale, Activity, Cigarette, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Layout from "@/components/Layout";
 
 const formSchema = z.object({
   age: z.number().min(0).max(150),
@@ -34,10 +35,10 @@ const Assessment: React.FC = () => {
   const form = useForm<HealthFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      age: 0,
+      age: undefined,
       gender: "Male",
-      height: 0,
-      weight: 0,
+      height: undefined,
+      weight: undefined,
       hypertension: "No",
       heart_disease: "No",
       smoking_status: "Never Smoked",
@@ -51,8 +52,8 @@ const Assessment: React.FC = () => {
       value = value.replace(/^0+/, '');
     }
     
-    if (value === '' || value === '0') {
-      onChange(0);
+    if (value === '') {
+      onChange(undefined as any);
     } else {
       const num = parseInt(value, 10);
       if (!isNaN(num) && num >= 0) {
@@ -162,12 +163,13 @@ const Assessment: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto py-8 px-4">
+    <Layout>
+      <div className="container mx-auto py-8 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-4">Stroke Risk Assessment</h1>
+            <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+              Stroke Risk Assessment
+            </h1>
             <p className="text-muted-foreground">
               Complete this assessment to understand your stroke risk factors and get personalized recommendations.
             </p>
@@ -209,7 +211,7 @@ const Assessment: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+          <div className="backdrop-blur-sm bg-white/80 rounded-2xl shadow-xl border border-white/20 p-6 md:p-8">
             <div className="mb-6">
               <h2 className="text-2xl font-semibold flex items-center gap-2">
                 {React.createElement(sections[currentSection].icon, {
@@ -237,8 +239,14 @@ const Assessment: React.FC = () => {
                               type="number"
                               placeholder="Enter your age"
                               onChange={(e) => handleNumberInput(e, field.onChange)}
-                              value={field.value}
-                              className="bg-white"
+                              value={field.value || ''}
+                              className="bg-white placeholder:text-gray-400"
+                              onFocus={(e) => {
+                                if (e.target.value === '0') {
+                                  e.target.value = '';
+                                  field.onChange(undefined as any);
+                                }
+                              }}
                             />
                           </FormControl>
                           <FormDescription>
@@ -290,8 +298,14 @@ const Assessment: React.FC = () => {
                               type="number"
                               placeholder="Enter your height"
                               onChange={(e) => handleNumberInput(e, field.onChange)}
-                              value={field.value}
-                              className="bg-white"
+                              value={field.value || ''}
+                              className="bg-white placeholder:text-gray-400"
+                              onFocus={(e) => {
+                                if (e.target.value === '0') {
+                                  e.target.value = '';
+                                  field.onChange(undefined as any);
+                                }
+                              }}
                             />
                           </FormControl>
                           <FormDescription>
@@ -313,8 +327,14 @@ const Assessment: React.FC = () => {
                               type="number"
                               placeholder="Enter your weight"
                               onChange={(e) => handleNumberInput(e, field.onChange)}
-                              value={field.value}
-                              className="bg-white"
+                              value={field.value || ''}
+                              className="bg-white placeholder:text-gray-400"
+                              onFocus={(e) => {
+                                if (e.target.value === '0') {
+                                  e.target.value = '';
+                                  field.onChange(undefined as any);
+                                }
+                              }}
                             />
                           </FormControl>
                           <FormDescription>
@@ -437,8 +457,8 @@ const Assessment: React.FC = () => {
             </Form>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 };
 

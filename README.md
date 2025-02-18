@@ -1,69 +1,64 @@
-# Welcome to your Lovable project
+# Brain Stroke Prevention Platform
 
-## Project info
+An AI-powered platform for stroke risk assessment and prevention, providing personalized recommendations and health tracking.
 
-**URL**: https://lovable.dev/projects/bb0cb85e-546f-4e74-8754-df7001e5bc32
+## Features
 
-## How can I edit this code?
+- **Multi-Step Risk Assessment**: User-friendly assessment process with intuitive progress tracking
+- **Personalized Risk Analysis**: Advanced algorithms to calculate stroke risk based on multiple health factors
+- **Health History Tracking**: Monitor your risk assessments and health progress over time
+- **Secure Authentication**: Protected user data with Supabase authentication
+- **Responsive Design**: Seamless experience across all devices
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- React + TypeScript
+- Vite for build tooling
+- Tailwind CSS for styling
+- Shadcn UI components
+- Supabase for backend and authentication
+- Docker for containerization
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/bb0cb85e-546f-4e74-8754-df7001e5bc32) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Clone the repository:
+```bash
+git clone https://github.com/paramveeRana/BrainStroke2.4.git
+cd BrainStroke2.4
+```
 
-**Use your preferred IDE**
+2. Install dependencies:
+```bash
+npm install
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+4. For Docker deployment:
+```bash
+docker-compose up --build
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Environment Variables
 
-**Use GitHub Codespaces**
+Create a `.env` file with the following variables:
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Contributing
 
-## What technologies are used for this project?
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-This project is built with .
+## Authors
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Paramveer Singh** - Full Stack Developer & ML Engineer
+- **Nehal Dixit** - Project Support & Inspiration
 
-## How can I deploy this project?
+## License
 
-Simply open [Lovable](https://lovable.dev/projects/bb0cb85e-546f-4e74-8754-df7001e5bc32) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+This project is licensed under the MIT License - see the LICENSE file for details.

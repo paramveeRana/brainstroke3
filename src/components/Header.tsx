@@ -51,78 +51,82 @@ const Header = () => {
   }, [location]);
 
   return (
-    <header className="py-4 px-6 bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="flex items-center space-x-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => handleNavigation("/")}
-            className="text-2xl font-extrabold tracking-tight font-inter hover:no-underline hover:bg-transparent"
-          >
-            <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-              Brain Stroke Prevention
-            </span>
-          </Button>
-          
-          <nav className="hidden md:flex items-center space-x-6">
-            <Button 
-              variant="ghost" 
-              onClick={() => handleNavigation("/assessment")}
-              className="text-gray-600 hover:text-primary"
-            >
-              Take Assessment
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => handleNavigation("/about")}
-              className="text-gray-600 hover:text-primary"
-              data-testid="about-button"
-            >
-              About
-            </Button>
-            {user && (
-              <>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => handleNavigation("/assessment-history")}
-                  className="text-gray-600 hover:text-primary"
-                >
-                  Assessment History
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => handleNavigation("/health-resources")}
-                  className="text-gray-600 hover:text-primary"
-                >
-                  Health Resources
-                </Button>
-              </>
-            )}
-          </nav>
-        </div>
-
-        <div className="flex items-center space-x-4">
-          {user ? (
-            <>
-              <span className="text-sm text-gray-600">
-                {user.email}
-              </span>
+    <header className="fixed top-0 left-0 right-0 z-50 h-[72px]">
+      <div className="backdrop-blur-sm bg-white/80 shadow-sm border-b border-white/20 h-full">
+        <div className="max-w-7xl mx-auto px-6 h-full">
+          <div className="flex justify-between items-center h-full">
+            <div className="flex items-center space-x-8">
               <Button 
-                onClick={handleSignOut}
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary/10"
+                variant="ghost" 
+                onClick={() => handleNavigation("/")}
+                className="text-2xl font-extrabold tracking-tight font-inter hover:no-underline hover:bg-transparent group"
               >
-                Sign Out
+                <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent group-hover:scale-105 transition-transform">
+                  Brain Stroke Prevention
+                </span>
               </Button>
-            </>
-          ) : (
-            <Button 
-              onClick={() => handleNavigation("/auth")}
-              className="bg-primary hover:bg-primary-dark text-white"
-            >
-              Sign In
-            </Button>
-          )}
+              
+              <nav className="hidden md:flex items-center space-x-6">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => handleNavigation("/assessment")}
+                  className="text-gray-600 hover:text-primary transition-all duration-300 hover:scale-105"
+                >
+                  Take Assessment
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => handleNavigation("/about")}
+                  className="text-gray-600 hover:text-primary transition-all duration-300 hover:scale-105"
+                  data-testid="about-button"
+                >
+                  About
+                </Button>
+                {user && (
+                  <>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleNavigation("/assessment-history")}
+                      className="text-gray-600 hover:text-primary transition-all duration-300 hover:scale-105"
+                    >
+                      Assessment History
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleNavigation("/health-resources")}
+                      className="text-gray-600 hover:text-primary transition-all duration-300 hover:scale-105"
+                    >
+                      Health Resources
+                    </Button>
+                  </>
+                )}
+              </nav>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              {user ? (
+                <>
+                  <span className="text-sm text-gray-600 bg-gradient-to-r from-primary/10 to-primary-dark/10 px-3 py-1 rounded-full">
+                    {user.email}
+                  </span>
+                  <Button 
+                    onClick={handleSignOut}
+                    variant="outline"
+                    className="border-primary text-primary hover:bg-primary/10 transition-all duration-300 hover:scale-105"
+                  >
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  onClick={() => handleNavigation("/auth")}
+                  className="bg-primary hover:bg-primary-dark text-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  Sign In
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </header>

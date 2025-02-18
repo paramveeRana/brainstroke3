@@ -15,6 +15,7 @@ import type { User } from "@supabase/supabase-js";
 import Results from "@/pages/Results";
 import About from "@/pages/About";
 import AssessmentHistory from "@/pages/AssessmentHistory";
+import HealthResources from "@/pages/HealthResources";
 
 const queryClient = new QueryClient();
 
@@ -85,7 +86,7 @@ const App: React.FC = () => {
                 path="/health-resources"
                 element={
                   <ProtectedRoute>
-                    <Assessment />
+                    <HealthResources />
                   </ProtectedRoute>
                 }
               />
