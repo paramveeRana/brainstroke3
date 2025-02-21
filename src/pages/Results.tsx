@@ -49,28 +49,56 @@ const Results = () => {
 
         // Store results in Supabase
         if (user?.id) {
-          const { error } = await supabase
+          console.log('Storing health record and risk assessment...');
+
+          // First store the health record
+          const { data: healthRecord, error: healthRecordError } = await supabase
+            .from('health_records')
+            .insert({
+              user_id: user.id,
+              age: healthData.age,
+              gender: healthData.gender,
+              height: healthData.height,
+              weight: healthData.weight,
+              hypertension: healthData.hypertension,
+              heart_disease: healthData.heart_disease,
+              smoking_status: healthData.smoking_status
+            })
+            .select()
+            .single();
+
+          if (healthRecordError) {
+            console.error('Error storing health record:', healthRecordError);
+            throw healthRecordError;
+          }
+
+          console.log('Health record stored:', healthRecord);
+
+          // Then store the risk assessment
+          const { error: riskAssessmentError } = await supabase
             .from('risk_assessments')
             .insert({
               user_id: user.id,
+              health_record_id: healthRecord.id,
               risk_score: analysisResult.riskScore,
               risk_level: analysisResult.riskLevel,
               bmi: analysisResult.bmi,
-              recommendations: analysisResult.recommendations,
-              health_record_data: healthData
+              recommendations: analysisResult.recommendations
             });
 
-          if (error) {
-            console.error("Error storing risk assessment:", error);
-            toast.error("Failed to save your assessment results");
-          } else {
-            // Replace the current URL state to prevent getting stuck
-            window.history.replaceState({}, '', '/results');
+          if (riskAssessmentError) {
+            console.error('Error storing risk assessment:', riskAssessmentError);
+            throw riskAssessmentError;
           }
+
+          console.log('Risk assessment stored successfully');
+          
+          // Replace the current URL state to prevent getting stuck
+          window.history.replaceState({}, '', '/results');
         }
       } catch (error: any) {
         console.error("Error analyzing risk assessment:", error);
-        toast.error("Failed to analyze your assessment results");
+        toast.error("Failed to save your assessment results");
       } finally {
         setIsLoading(false);
       }

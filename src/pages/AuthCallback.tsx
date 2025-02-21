@@ -63,55 +63,67 @@ export default function AuthCallback() {
         const userId = session.user.id;
         const userEmail = session.user.email;
         
-        console.log('Attempting profile operations for:', {
-          userId,
-          userEmail,
+        console.log('Auth Callback - User Info:', {
+          id: userId,
+          email: userEmail,
           metadata: session.user.user_metadata
         });
 
         try {
-          // First, try to create the profile
-          const { error: upsertError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: userId,
-              email: userEmail,
-              username: userEmail?.split('@')[0] || 'user',
-              full_name: session.user.user_metadata?.full_name || userEmail?.split('@')[0],
-              updated_at: new Date().toISOString()
-            });
-
-          if (upsertError) {
-            console.error('Profile upsert error:', upsertError);
-            throw upsertError;
-          }
-
-          // Verify the profile was created
-          const { data: verifyProfile, error: verifyError } = await supabase
+          // First check if profile exists
+          const { data: existingProfile, error: checkError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', userId)
             .single();
 
-          if (verifyError) {
-            console.error('Profile verification error:', verifyError);
-            throw verifyError;
+          console.log('Profile check result:', {
+            exists: !!existingProfile,
+            error: checkError?.message,
+            profile: existingProfile
+          });
+
+          if (!existingProfile) {
+            // Create new profile
+            const { data: newProfile, error: createError } = await supabase
+              .from('profiles')
+              .insert({
+                id: userId,
+                email: userEmail,
+                username: userEmail?.split('@')[0] || 'user',
+                full_name: session.user.user_metadata?.full_name || userEmail?.split('@')[0],
+                updated_at: new Date().toISOString()
+              })
+              .select()
+              .single();
+
+            console.log('Profile creation result:', {
+              success: !!newProfile,
+              error: createError?.message,
+              profile: newProfile
+            });
+
+            if (createError) {
+              throw createError;
+            }
           }
 
-          console.log('Profile verified:', verifyProfile);
-
-          // Also verify RLS policies
-          const { data: rlsCheck, error: rlsError } = await supabase
+          // Verify profile was created/exists
+          const { data: finalCheck, error: finalError } = await supabase
             .from('profiles')
-            .select('id, email, username')
+            .select('*')
             .eq('id', userId)
             .single();
 
-          console.log('RLS Policy Check:', {
-            success: !!rlsCheck,
-            error: rlsError?.message,
-            data: rlsCheck
+          console.log('Final profile verification:', {
+            exists: !!finalCheck,
+            error: finalError?.message,
+            profile: finalCheck
           });
+
+          if (!finalCheck) {
+            throw new Error('Profile verification failed');
+          }
 
         } catch (profileError: any) {
           console.error('Profile operation failed:', profileError);

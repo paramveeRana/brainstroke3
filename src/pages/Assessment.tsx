@@ -69,7 +69,11 @@ const Assessment: React.FC = () => {
     }
 
     try {
-      console.log('Current user:', user);
+      console.log('Assessment - Current user:', {
+        id: user.id,
+        email: user.email,
+        metadata: user.user_metadata
+      });
 
       // First verify the profile exists
       const { data: profile, error: profileError } = await supabase
@@ -78,56 +82,64 @@ const Assessment: React.FC = () => {
         .eq('id', user.id)
         .single();
 
-      console.log('Profile check:', { profile, error: profileError?.message });
+      console.log('Assessment - Profile check:', {
+        exists: !!profile,
+        error: profileError?.message,
+        profile: profile
+      });
 
-      if (profileError) {
-        console.error('Profile error:', profileError);
-        throw new Error('Could not verify user profile');
-      }
-
-      if (!profile) {
-        console.error('No profile found for user');
-        // Try to create profile
-        const { error: createProfileError } = await supabase
+      if (profileError || !profile) {
+        console.error('Profile verification failed:', profileError);
+        // Try to create profile if it doesn't exist
+        const { data: newProfile, error: createError } = await supabase
           .from('profiles')
-          .upsert({
+          .insert({
             id: user.id,
             email: user.email,
             username: user.email?.split('@')[0] || 'user',
+            full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
             updated_at: new Date().toISOString()
-          });
+          })
+          .select()
+          .single();
 
-        if (createProfileError) {
-          console.error('Profile creation error:', createProfileError);
-          throw new Error('Failed to create user profile');
+        console.log('Assessment - Profile creation attempt:', {
+          success: !!newProfile,
+          error: createError?.message,
+          profile: newProfile
+        });
+
+        if (createError) {
+          throw new Error('Could not create user profile');
         }
       }
 
       const healthRecord = {
+        user_id: user.id,
         age: data.age,
         gender: data.gender,
         height: data.height,
         weight: data.weight,
         hypertension: data.hypertension === "Yes",
         heart_disease: data.heart_disease === "Yes",
-        smoking_status: data.smoking_status,
-        user_id: user.id
+        smoking_status: data.smoking_status
       };
 
-      console.log('Submitting health record:', healthRecord);
+      console.log('Assessment - Submitting health record:', healthRecord);
 
-      const { error: insertError } = await supabase
-        .from("health_records")
-        .insert(healthRecord);
+      const { data: savedRecord, error: healthRecordError } = await supabase
+        .from('health_records')
+        .insert(healthRecord)
+        .select()
+        .single();
 
-      if (insertError) {
-        console.error('Health record insertion error:', insertError);
-        throw insertError;
+      if (healthRecordError) {
+        console.error('Health record insertion error:', healthRecordError);
+        throw healthRecordError;
       }
 
-      console.log('Health record submitted successfully');
-      toast.success("Health data submitted successfully!");
-      
+      console.log('Assessment - Health record saved:', savedRecord);
+
       navigate("/results", { 
         state: { 
           healthData: {
@@ -143,7 +155,7 @@ const Assessment: React.FC = () => {
       });
     } catch (error: any) {
       console.error("Assessment submission error:", error);
-      toast.error(error.message || "Failed to save your assessment results");
+      toast.error(error.message || "Failed to submit assessment");
     }
   };
 
