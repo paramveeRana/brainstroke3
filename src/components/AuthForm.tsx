@@ -25,9 +25,8 @@ export function AuthForm() {
           redirectTo: `${window.location.origin}/auth/callback`,
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent',
+            prompt: 'select_account',
           },
-          skipBrowserRedirect: true, // We'll handle redirect manually
         },
       });
 
@@ -35,7 +34,6 @@ export function AuthForm() {
       if (!data.url) throw new Error("No OAuth URL returned");
 
       console.log("OAuth URL:", data.url);
-      // Manually redirect
       window.location.href = data.url;
     } catch (error: any) {
       console.error("Social login error:", error);
