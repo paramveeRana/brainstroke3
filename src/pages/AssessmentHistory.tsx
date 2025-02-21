@@ -6,12 +6,25 @@ import { useAuth } from "@/App";
 import { Brain, Calendar, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Database } from "@/integrations/supabase/types";
 
-type Assessment = Database['public']['Tables']['risk_assessments']['Row'];
+type AssessmentHistoryRecord = {
+  id: string;
+  risk_score: number;
+  risk_level: string;
+  bmi: number;
+  recommendations: string[];
+  created_at: string;
+  age: number;
+  gender: string;
+  height: number;
+  weight: number;
+  hypertension: boolean;
+  heart_disease: boolean;
+  smoking_status: string;
+};
 
 const AssessmentHistory = () => {
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [assessments, setAssessments] = useState<AssessmentHistoryRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -20,16 +33,21 @@ const AssessmentHistory = () => {
     const fetchAssessments = async () => {
       try {
         setIsLoading(true);
+        console.log('Fetching assessment history for user:', user?.id);
+
         const { data, error } = await supabase
-          .from('risk_assessments')
-          .select()
-          .eq('user_id', user?.id)
+          .rpc('get_assessment_history', { user_id: user?.id })
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching assessments:', error);
+          throw error;
+        }
+
+        console.log('Fetched assessments:', data);
         setAssessments(data || []);
       } catch (error: any) {
-        console.error('Error fetching assessments:', error);
+        console.error('Error in assessment history:', error);
         toast.error('Failed to load assessment history');
       } finally {
         setIsLoading(false);
@@ -126,17 +144,17 @@ const AssessmentHistory = () => {
                     <div>
                       <h3 className="font-semibold mb-2">Health Metrics</h3>
                       <ul className="space-y-2 text-sm text-muted-foreground">
-                        <li>Age: {assessment.health_record_data.age}</li>
-                        <li>Gender: {assessment.health_record_data.gender}</li>
+                        <li>Age: {assessment.age}</li>
+                        <li>Gender: {assessment.gender}</li>
                         <li>BMI: {assessment.bmi.toFixed(1)}</li>
                         <li>
                           Medical Conditions: {' '}
                           {[
-                            assessment.health_record_data.hypertension && 'Hypertension',
-                            assessment.health_record_data.heart_disease && 'Heart Disease'
+                            assessment.hypertension && 'Hypertension',
+                            assessment.heart_disease && 'Heart Disease'
                           ].filter(Boolean).join(', ') || 'None'}
                         </li>
-                        <li>Smoking Status: {assessment.health_record_data.smoking_status}</li>
+                        <li>Smoking Status: {assessment.smoking_status}</li>
                       </ul>
                     </div>
 
@@ -161,7 +179,15 @@ const AssessmentHistory = () => {
                       variant="outline"
                       onClick={() => navigate('/results', { 
                         state: { 
-                          healthData: assessment.health_record_data,
+                          healthData: {
+                            age: assessment.age,
+                            gender: assessment.gender,
+                            height: assessment.height,
+                            weight: assessment.weight,
+                            hypertension: assessment.hypertension,
+                            heart_disease: assessment.heart_disease,
+                            smoking_status: assessment.smoking_status
+                          },
                           fromHistory: true 
                         }
                       })}
