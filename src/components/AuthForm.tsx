@@ -19,6 +19,8 @@ export function AuthForm() {
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     try {
       setIsLoading(true);
+      console.log('Starting OAuth flow with redirect URL:', `${window.location.origin}/auth/callback`);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -30,6 +32,8 @@ export function AuthForm() {
           skipBrowserRedirect: false,
         },
       });
+
+      console.log('OAuth response:', { data, error });
 
       if (error) {
         console.error("OAuth error:", error);
