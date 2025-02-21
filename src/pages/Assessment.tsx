@@ -69,6 +69,40 @@ const Assessment: React.FC = () => {
     }
 
     try {
+      console.log('Current user:', user);
+
+      // First verify the profile exists
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      console.log('Profile check:', { profile, error: profileError?.message });
+
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        throw new Error('Could not verify user profile');
+      }
+
+      if (!profile) {
+        console.error('No profile found for user');
+        // Try to create profile
+        const { error: createProfileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            email: user.email,
+            username: user.email?.split('@')[0] || 'user',
+            updated_at: new Date().toISOString()
+          });
+
+        if (createProfileError) {
+          console.error('Profile creation error:', createProfileError);
+          throw new Error('Failed to create user profile');
+        }
+      }
+
       const healthRecord = {
         age: data.age,
         gender: data.gender,
@@ -80,12 +114,18 @@ const Assessment: React.FC = () => {
         user_id: user.id
       };
 
-      const { error } = await supabase
+      console.log('Submitting health record:', healthRecord);
+
+      const { error: insertError } = await supabase
         .from("health_records")
         .insert(healthRecord);
 
-      if (error) throw error;
+      if (insertError) {
+        console.error('Health record insertion error:', insertError);
+        throw insertError;
+      }
 
+      console.log('Health record submitted successfully');
       toast.success("Health data submitted successfully!");
       
       navigate("/results", { 
@@ -102,7 +142,8 @@ const Assessment: React.FC = () => {
         }
       });
     } catch (error: any) {
-      toast.error(error.message);
+      console.error("Assessment submission error:", error);
+      toast.error(error.message || "Failed to save your assessment results");
     }
   };
 
