@@ -9,32 +9,38 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Get the auth code from the URL
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
-        
-        if (!code) {
-          console.error("No auth code found in URL");
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const queryParams = new URLSearchParams(window.location.search);
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const code = queryParams.get('code');
+
+        if (!code && !accessToken) {
+          console.error("No auth code or tokens found in URL");
           navigate('/auth');
           return;
         }
 
-        console.log("Got auth code, exchanging...");
+        let session;
 
-        // Exchange the code
-        const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code);
-
-        if (error) {
-          console.error("Session exchange error:", error);
-          throw error;
+        if (code) {
+          console.log("Got auth code, exchanging...");
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+          session = data.session;
+        } else if (accessToken) {
+          console.log("Got access token, setting session...");
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || '',
+          });
+          if (error) throw error;
+          session = data.session;
         }
 
         if (!session?.user) {
-          console.error("No user in session after exchange");
-          throw new Error("Authentication failed");
+          throw new Error("No user in session after authentication");
         }
-
-        console.log("Got session, checking profile...");
 
         // Check if profile exists
         const { data: profile, error: profileError } = await supabase
@@ -44,30 +50,23 @@ export default function AuthCallback() {
           .single();
 
         if (profileError && profileError.code !== 'PGRST116') {
-          console.error("Profile fetch error:", profileError);
           throw profileError;
         }
 
         // Create profile if it doesn't exist
         if (!profile) {
-          console.log("Creating new profile...");
           const { error: insertError } = await supabase
             .from('profiles')
-            .insert([
-              {
-                id: session.user.id,
-                username: session.user.email?.split('@')[0],
-                email: session.user.email
-              }
-            ]);
+            .insert([{
+              id: session.user.id,
+              username: session.user.email?.split('@')[0],
+              email: session.user.email,
+              full_name: session.user.user_metadata?.full_name
+            }]);
 
-          if (insertError) {
-            console.error("Profile creation error:", insertError);
-            throw insertError;
-          }
+          if (insertError) throw insertError;
         }
 
-        console.log("Auth success, redirecting to landing page...");
         toast.success("Successfully signed in!");
         navigate('/');
       } catch (error: any) {

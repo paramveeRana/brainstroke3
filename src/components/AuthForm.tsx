@@ -27,17 +27,18 @@ export function AuthForm() {
             access_type: 'offline',
             prompt: 'select_account',
           },
+          skipBrowserRedirect: false,
         },
       });
 
-      if (error) throw error;
-      if (!data.url) throw new Error("No OAuth URL returned");
-
-      console.log("OAuth URL:", data.url);
-      window.location.href = data.url;
+      if (error) {
+        console.error("OAuth error:", error);
+        throw error;
+      }
     } catch (error: any) {
       console.error("Social login error:", error);
       toast.error(error.message);
+    } finally {
       setIsLoading(false);
     }
   };
