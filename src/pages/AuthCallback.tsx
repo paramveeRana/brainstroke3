@@ -60,48 +60,62 @@ export default function AuthCallback() {
           throw new Error("No user in session after authentication");
         }
 
-        console.log('Creating/checking profile for user:', {
-          id: session.user.id,
-          email: session.user.email,
+        const userId = session.user.id;
+        const userEmail = session.user.email;
+        
+        console.log('Attempting profile operations for:', {
+          userId,
+          userEmail,
           metadata: session.user.user_metadata
         });
 
-        // Check if profile exists
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select()
-          .eq('id', session.user.id)
-          .single();
-
-        console.log('Profile check:', {
-          exists: !!profile,
-          error: profileError?.message
-        });
-
-        if (profileError && profileError.code !== 'PGRST116') {
-          throw profileError;
-        }
-
-        // Create profile if it doesn't exist
-        if (!profile) {
-          console.log('Creating new profile...');
-          const { error: insertError } = await supabase
+        try {
+          // First, try to create the profile
+          const { error: upsertError } = await supabase
             .from('profiles')
-            .upsert([{
-              id: session.user.id,
-              email: session.user.email,
-              username: session.user.email?.split('@')[0] || 'user',
-              full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+            .upsert({
+              id: userId,
+              email: userEmail,
+              username: userEmail?.split('@')[0] || 'user',
+              full_name: session.user.user_metadata?.full_name || userEmail?.split('@')[0],
               updated_at: new Date().toISOString()
-            }], {
-              onConflict: 'id'
             });
 
-          if (insertError) {
-            console.error('Profile creation error:', insertError);
-            throw insertError;
+          if (upsertError) {
+            console.error('Profile upsert error:', upsertError);
+            throw upsertError;
           }
-          console.log('Profile created successfully');
+
+          // Verify the profile was created
+          const { data: verifyProfile, error: verifyError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+          if (verifyError) {
+            console.error('Profile verification error:', verifyError);
+            throw verifyError;
+          }
+
+          console.log('Profile verified:', verifyProfile);
+
+          // Also verify RLS policies
+          const { data: rlsCheck, error: rlsError } = await supabase
+            .from('profiles')
+            .select('id, email, username')
+            .eq('id', userId)
+            .single();
+
+          console.log('RLS Policy Check:', {
+            success: !!rlsCheck,
+            error: rlsError?.message,
+            data: rlsCheck
+          });
+
+        } catch (profileError: any) {
+          console.error('Profile operation failed:', profileError);
+          throw new Error(`Profile creation failed: ${profileError.message}`);
         }
 
         toast.success("Successfully signed in!");
