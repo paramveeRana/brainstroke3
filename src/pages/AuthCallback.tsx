@@ -60,7 +60,11 @@ export default function AuthCallback() {
           throw new Error("No user in session after authentication");
         }
 
-        console.log('Session established successfully');
+        console.log('Creating/checking profile for user:', {
+          id: session.user.id,
+          email: session.user.email,
+          metadata: session.user.user_metadata
+        });
 
         // Check if profile exists
         const { data: profile, error: profileError } = await supabase
@@ -83,14 +87,20 @@ export default function AuthCallback() {
           console.log('Creating new profile...');
           const { error: insertError } = await supabase
             .from('profiles')
-            .insert([{
+            .upsert([{
               id: session.user.id,
-              username: session.user.email?.split('@')[0],
               email: session.user.email,
-              full_name: session.user.user_metadata?.full_name
-            }]);
+              username: session.user.email?.split('@')[0] || 'user',
+              full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+              updated_at: new Date().toISOString()
+            }], {
+              onConflict: 'id'
+            });
 
-          if (insertError) throw insertError;
+          if (insertError) {
+            console.error('Profile creation error:', insertError);
+            throw insertError;
+          }
           console.log('Profile created successfully');
         }
 
