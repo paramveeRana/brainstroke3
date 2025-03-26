@@ -1,96 +1,112 @@
-import { ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+import { ClipboardCheck, Brain, LineChart, Shield } from "lucide-react";
+import { colors, animations, styles } from "@/styles/design-system";
 
 const steps = [
   {
-    number: "01",
+    icon: ClipboardCheck,
     title: "Input Health Data",
-    description: "Enter basic health information and medical history"
+    description: "Enter your health information and medical history through our secure platform."
   },
   {
-    number: "02",
+    icon: Brain,
     title: "AI Analysis",
-    description: "Our advanced AI processes your data using validated models"
+    description: "Our advanced AI algorithms analyze your data to assess stroke risk factors."
   },
   {
-    number: "03",
+    icon: LineChart,
     title: "Risk Assessment",
-    description: "Receive detailed risk analysis and personalized insights"
+    description: "Get detailed insights and risk scores based on comprehensive analysis."
+  },
+  {
+    icon: Shield,
+    title: "Prevention Plan",
+    description: "Receive personalized recommendations and preventive measures."
   }
 ];
 
 const HowItWorks = () => {
-  return (
-    <section className="relative py-32 overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-black/95 to-black/90" />
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-blue-900/20 to-purple-900/20" />
-      <div className="absolute top-1/3 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/3 -right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-      
-      {/* Grid Pattern */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzMzMzMzMzIyIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20" />
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(containerRef, { once: true, margin: "-100px" });
 
-      <div className="max-w-6xl mx-auto px-4 relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+  return (
+    <section className={styles.section}>
+      {/* Background Elements */}
+      <motion.div 
+        className={`absolute inset-0 bg-gradient-to-b ${colors.background.gradient}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      />
+      
+      <motion.div 
+        className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"
+        animate={{ 
+          scale: [1, 1.1, 1],
+          opacity: [0.2, 0.3, 0.2]
+        }}
+        transition={{ 
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+
+      <div className={styles.container}>
+        <motion.div
+          ref={containerRef}
+          variants={animations.container}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
           className="text-center mb-16"
         >
-          <motion.span 
-            initial={{ opacity: 0, y: -20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="inline-block px-6 py-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg mb-8"
+          <motion.h2 
+            variants={animations.item}
+            className={`${styles.heading.h2} ${colors.text.gradient}`}
           >
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-              Process
-            </span>
-          </motion.span>
-          
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-              How It Works
-            </span>
-          </h2>
-          
-          <p className="text-gray-300 max-w-2xl mx-auto">
-            Simple steps to get your stroke risk assessment
-          </p>
+            How It Works
+          </motion.h2>
+          <motion.p 
+            variants={animations.item}
+            className={styles.text.medium}
+          >
+            Our simple four-step process makes stroke prevention accessible and effective.
+          </motion.p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+        <motion.div 
+          variants={animations.container}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+        >
           {steps.map((step, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.2 }}
+              variants={animations.item}
               className="group relative"
+              whileHover={animations.hover}
+              transition={{ duration: 0.2 }}
             >
-              <div className="h-full p-8 rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl 
-                            transition-all duration-300 hover:scale-105 hover:bg-white/20">
-                <span className="block text-5xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-6">
-                  {step.number}
-                </span>
-                <h3 className="text-xl font-semibold mb-3 text-white group-hover:text-cyan-300 transition-colors">
-                  {step.title}
-                </h3>
-                <p className="text-gray-300">
-                  {step.description}
-                </p>
+              <div className={`absolute inset-0 ${styles.card.gradient} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+              <div className={styles.card.base}>
+                <motion.div 
+                  className={styles.icon.container}
+                  whileHover={animations.hover}
+                  transition={{ duration: 0.2 }}
+                >
+                  <step.icon className={styles.icon.size} />
+                </motion.div>
+                <div className="mb-4">
+                  <span className="text-2xl font-bold text-white/20">0{index + 1}</span>
+                </div>
+                <h3 className={styles.heading.h3}>{step.title}</h3>
+                <p className={styles.text.small}>{step.description}</p>
               </div>
-              
-              {index < steps.length - 1 && (
-                <ArrowRight className="hidden md:block absolute top-1/2 -right-4 w-8 h-8 text-cyan-400 transform -translate-y-1/2 animate-pulse" />
-              )}
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
