@@ -5,7 +5,7 @@ import path from "path";
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 8082,
+    port: 8081,
     host: '0.0.0.0',
     hmr: {
       overlay: false

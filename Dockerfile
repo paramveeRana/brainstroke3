@@ -16,11 +16,11 @@ COPY . .
 
 # Set environment variables
 ENV NODE_ENV=development
-ENV VITE_PORT=8082
+ENV VITE_PORT=8081
 ENV HOST=0.0.0.0
 
 # Expose the port
-EXPOSE 8082
+EXPOSE 8081
 
 # Start the development server with host and port explicitly set
-CMD ["sh", "-c", "npm run dev -- --host 0.0.0.0 --port 8082"]
+CMD ["sh", "-c", "npm run dev -- --host 0.0.0.0 --port 8081"]
